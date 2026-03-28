@@ -1,25 +1,25 @@
 "use client";
 import { useState } from "react";
 import { date, getCurrentMonth, getCompleteDate } from "@/app/lib/date";
-import { registerGuides, getGuides, hours } from "@/app/lib/data";
+import { registerGuides } from "@/app/lib/data";
+import { ListHours } from "./ListHours";
 
-export const Content = () => {
+
+
+
+export  const Content = () => {
   const [activeMenuShow, setActiveMenuShow] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
-  const [controlHours, setControlHours] = useState("totalHours");
+
 
   const months = date.months;
   const completeDate = getCompleteDate();
   const numberCurrentMonth = getCurrentMonth();
   const currentMonth = months[numberCurrentMonth];
   const lastMonth = months[numberCurrentMonth - 1];
-
-  const currentUser = {
-    id: "JH45",
-    name: "Juan",
-    lastName: "Herrera",
-  };
-
+  
+  
+  
   const handleClick = () => {
     setActiveMenuShow(!activeMenuShow);
   };
@@ -30,33 +30,7 @@ export const Content = () => {
     }
   };
 
-  const handleControlHours = (e) => {
-    const id = e.target.dataset.id;
-    const allLiElements =
-      e.target.parentElement.querySelectorAll("li[data-id]");
-
-    allLiElements.forEach((liChildElement) => {
-      if (liChildElement.dataset.id === id) {
-        allLiElements.forEach((liChildElement) => {
-          liChildElement.classList.replace("bg-cyan-800", "bg-white");
-          liChildElement.classList.replace("px-6", "px-3");
-          liChildElement.classList.remove("text-white");
-        });
-        if (liChildElement.classList.contains("bg-cyan-800")) {
-          liChildElement.classList.replace("bg-cyan-800", "bg-white");
-          liChildElement.classList.replace("px-6", "px-3");
-          liChildElement.classList.remove("text-white");
-          return;
-        }
-
-        liChildElement.classList.replace("bg-white", "bg-cyan-800");
-        liChildElement.classList.replace("px-3", "px-6");
-        liChildElement.classList.add("text-white");
-      }
-    });
-
-    setControlHours(id);
-  };
+ 
 
   return (
     <div
@@ -84,97 +58,13 @@ export const Content = () => {
           <p className="uppercase">{lastMonth + "-" + currentMonth}</p>
         </div>
         <div>
-          Desde: {hours.timeLine.getFullPeriod().startPeriod} <br />
-          Hasta: {hours.timeLine.getFullPeriod().endPeriod}
+          {/* Desde: {hours.timeLine.getFullPeriod().startPeriod} <br />
+          Hasta: {hours.timeLine.getFullPeriod().endPeriod} */}
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto w-full overflow-scroll">
-        <div className="flex flex-col">
-          <ul className="flex justify-start overflow-x-scroll">
-            <li
-              className="bg-cyan-800 text-white px-6 text-nowrap transition-all py-2"
-              data-id="totalHours"
-              onClick={handleControlHours}
-            >
-              Totales
-            </li>
-            <li
-              className="bg-white px-3 text-nowrap transition-all py-2"
-              data-id="normalHours"
-              onClick={handleControlHours}
-            >
-              Normales
-            </li>
-            <li
-              className="px-3 text-nowrap bg-white transition-all py-2"
-              data-id="extraHours"
-              onClick={handleControlHours}
-            >
-              Extras:
-            </li>
-            <li
-              className="px-3 text-nowrap bg-white transition-all py-2"
-              data-id="superExtraHours"
-              onClick={handleControlHours}
-            >
-              S. Extra
-            </li>
-            <li
-              className="px-3 text-nowrap bg-white transition-all py-2"
-              data-id="sanFrancisco"
-              onClick={handleControlHours}
-            >
-              San francisco
-            </li>
-          </ul>
-
-          <div className="bg-cyan-800 p-5 text-white flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <div className="text-4xl">🗓️</div>
-              <div>
-                <p className="text-2xl">Horas: {hours[controlHours].total}</p>
-                <span>Guias: {hours[controlHours].totalGuides}</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-4">
-              <span className="col-span-1 font-semibold bg-cyan-950 p-2">
-                Orden.
-              </span>
-              <span className="col-span-1 font-semibold bg-cyan-950 p-2">
-                Tipo.
-              </span>
-              <span className="col-span-1 font-semibold bg-cyan-950 p-2">
-                Horas
-              </span>
-              <span className="col-span-1 font-semibold bg-cyan-950 p-2">
-                Cliente
-              </span>
-              {hours[controlHours].guides.map((guia) => (
-                <div
-                  className="col-span-4 grid grid-cols-4 divide-x"
-                  key={guia.numbOfGuide}
-                >
-                  <span className="col-span-1 p-2">{guia.numbOfGuide}</span>
-                  <span className="col-span-1 p-2">{guia.precioHora}</span>
-                  <span className="col-span-1 p-2">
-                    {guia.totalHoursWorked}
-                    {" hrs"}
-                  </span>
-                  <span className="col-span-1 p-2">{guia.lugar || 'particular'}</span>
-                </div>
-              ))}
-            </div>
-            <button
-              className="bg-emerald-500 uppercase px-4 py-3 text-white rounded-3xl ms-auto"
-              onClick={handleClick}
-            >
-              Agregar guia
-            </button>
-          </div>
-        </div>
-      </div>
-
+      
+      <ListHours handleClick={handleClick} />
       <div
         className={`bg-white shadow py-8 absolute w-full h-full 
         ${
@@ -203,7 +93,7 @@ export const Content = () => {
           {/*Campo hora inicio, selecciona la de inicio*/}
           <div className="flex items-center gap-2">
             <label htmlFor="horaInicio" className="w-full text-lg">
-              Hora inicio:
+              Inicio:
             </label>
             <input
               type="text"
@@ -217,7 +107,7 @@ export const Content = () => {
           {/*Campo hora termino, selecciona la de termino*/}
           <div className="flex items-center gap-2">
             <label htmlFor="horaTermino" className="w-full text-lg">
-              Hora termino:
+              Termino:
             </label>
             <input
               type="text"
@@ -231,7 +121,7 @@ export const Content = () => {
           {/*Campo hora llegada, selecciona la de llegada al taller*/}
           <div className="flex items-center gap-2">
             <label htmlFor="horaLLegada" className="w-full text-lg">
-              Hora llegada:
+              Llegada:
             </label>
             <input
               type="text"
@@ -345,6 +235,8 @@ export const Content = () => {
           X
         </button>
       </div>
+
+
     </div>
   );
 };
