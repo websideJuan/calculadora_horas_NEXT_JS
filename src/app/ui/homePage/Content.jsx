@@ -6,6 +6,7 @@ import { ListHours } from "./ListHours";
 
 
 
+console.log(process.env.DATABASE_URL);
 
 export  const Content = () => {
   const [activeMenuShow, setActiveMenuShow] = useState(false);

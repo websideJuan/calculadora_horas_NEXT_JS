@@ -3,7 +3,6 @@ import { getCompleteDate } from "./date";
 import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL);
-console.log(process.env.DATABASE_URL);
 
 
 export async function registerGuides(formData) {
