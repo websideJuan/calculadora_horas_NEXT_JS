@@ -4,52 +4,66 @@ import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL);
 
-
 export async function registerGuides(formData) {
   try {
-
     const currentDay = formData.get("cuantosDias");
     const guide = {
-      numbOfGuide: formData.get("numeroDeGuia"),
+      numbOfGuide: formData.get("numbOfGuide"),
       forklift_driver: 1,
-      dateGuide: currentDay ? formData.get('otherDay') : getCompleteDate(),
-      enterprise: formData.get('empresa') || 'Particular',
-      totalHoursWorked: Number(formData.get("totalHorasTrabajadas")),
-      typePrice: 'Normal',
-      startHours: formData.get("horaInicio"),
-      endHours: formData.get("horaTermino"),
-      arrivalHours: formData.get("horaLLegada"),
-      numbMachine: formData.get("numeroMaquina"),
+      dateGuide: currentDay ? formData.get("otherDay") : getCompleteDate(),
+      enterprise: formData.get("enterprise") || "Particular",
+      totalHoursWorked: Number(formData.get("totalHoursWorked")),
+      typePrice: "Normales",
+      startHours: formData.get("startHours"),
+      endHours: formData.get("endHours"),
+      arrivalHours: formData.get("arrivalHours"),
+      numbMachine: formData.get("numbMachine"),
     };
 
-      Number(guide.startHours.replace(":", ".")) > 8.5 && Number(guide.startHours.replace(":", ".")) < 18.5
-      ? guide.typePrice = 'Nromal'
-      : (Number(guide.arrivalHours.replace(":", ".")) > 18.5 && Number(guide.arrivalHours.replace(":", ".")) < 22.5) 
-        ? guide.typePrice = 'Extra'
-        :(Number(guide.startHours.replace(":", ".")) < 8.5 && Number(guide.arrivalHours.replace(":", ".") > 22.5)) 
-          ? guide.typePrice = 'S.Extra': 'null'
-    
-    guide.startHours.toString()
-    guide.arrivalHours.toString()
+    Number(guide.startHours.replace(":", ".")) > 8.5 &&
+    Number(guide.startHours.replace(":", ".")) < 18.5
+      ? (guide.typePrice = "Normales")
+      : Number(guide.arrivalHours.replace(":", ".")) > 18.5 &&
+          Number(guide.arrivalHours.replace(":", ".")) < 22.5
+        ? (guide.typePrice = "Extra")
+        : Number(guide.startHours.replace(":", ".")) < 8.5 &&
+            Number(guide.arrivalHours.replace(":", ".") > 22.5)
+          ? (guide.typePrice = "S.Extra")
+          : "null";
 
-    await sql
-      `INSERT INTO GUIDES (numb_of_guide, forklift_driver, date_guide, enterprise, total_hours_worked, type_price, start_hours, end_hours, arrival_hours, numbMachine) 
-       VALUES (${guide.numbOfGuide}, ${guide.forklift_driver}, ${guide.dateGuide}, ${guide.enterprise}, ${guide.totalHoursWorked}, ${guide.typePrice}, ${guide.startHours}, ${guide.endHours}, ${guide.arrivalHours}, ${guide.numbMachine});`
-    
-    
+    if (
+      guide.numbOfGuide === "" ||
+      guide.totalHoursWorked === "" ||
+      guide.numbMachine === ""
+    ) {
+      return {
+        success: false,
+        message: "input empty",
+      };
+    }
+
+    const res =
+      await sql`INSERT INTO GUIDES (numb_of_guide, forklift_driver, date_guide, enterprise, total_hours_worked, type_price, start_hours, end_hours, arrival_hours, numbMachine) 
+       VALUES (
+        ${guide.numbOfGuide}, ${guide.forklift_driver}, ${guide.dateGuide}, ${guide.enterprise}, ${guide.totalHoursWorked}, ${guide.typePrice}, ${guide.startHours}, ${guide.endHours}, ${guide.arrivalHours}, ${guide.numbMachine}
+       ) RETURNING numb_of_guide;`;
+
     return {
       success: true,
+      result: res,
     };
   } catch (error) {
-    console.log(error);
+    return {
+      success: false,
+      message: error.message,
+    };
   }
 }
 
 export async function getGuides(numbOfGuide) {
   try {
     const data = await sql.query(`SELECT * FROM GUIDES`);
-    
-    
+
     if (numbOfGuide) {
       return {
         success: true,
@@ -62,7 +76,10 @@ export async function getGuides(numbOfGuide) {
       guides: data,
     };
   } catch (error) {
-    throw new Error("Error: " + error.message);
+    return {
+      success: false,
+      errorMessage: error.message,
+    };
   }
 }
 

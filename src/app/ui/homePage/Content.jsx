@@ -4,23 +4,21 @@ import { date, getCurrentMonth, getCompleteDate } from "@/app/lib/date";
 import { registerGuides } from "@/app/lib/data";
 import { ListHours } from "./ListHours";
 
-
-
-console.log(process.env.DATABASE_URL);
-
-export  const Content = () => {
+export const Content = () => {
   const [activeMenuShow, setActiveMenuShow] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
-
+  const [valueInputNofOrden, setValueInputNofOrden] = useState("");
+  const [error, setError] = useState({
+    error: false,
+    message: "",
+  });
 
   const months = date.months;
   const completeDate = getCompleteDate();
   const numberCurrentMonth = getCurrentMonth();
   const currentMonth = months[numberCurrentMonth];
   const lastMonth = months[numberCurrentMonth - 1];
-  
-  
-  
+
   const handleClick = () => {
     setActiveMenuShow(!activeMenuShow);
   };
@@ -31,11 +29,31 @@ export  const Content = () => {
     }
   };
 
- 
+  const handleSubmit = async (e) => {
+    const res = await registerGuides(e);
+    console.log(res);
+    
+    if (!res.success) {
+      setError({
+        error: true,
+        message: res.message
+      });
+      return;
+    }
+
+    if (typeof res === "object") {
+      setValueInputNofOrden(res.result[0].numb_of_guide);
+    }
+
+    setError({
+      error: false,
+      message: ""
+    });
+  };
 
   return (
     <div
-      className={`h-dvh flex flex-col relative bg-gray-200 overflow-y-hidden before:content-[''] before:absolute before:inset-0 before:bg-black/40 
+      className={`flex flex-col bg-gray-200 overflow-y-hidden before:content-[''] before:absolute before:inset-0 before:bg-black/40 
         ${
           activeMenuShow
             ? "before:opacity-100 before:z-10"
@@ -58,186 +76,195 @@ export  const Content = () => {
           <p>Periodo actual:</p>
           <p className="uppercase">{lastMonth + "-" + currentMonth}</p>
         </div>
-        <div>
-          {/* Desde: {hours.timeLine.getFullPeriod().startPeriod} <br />
-          Hasta: {hours.timeLine.getFullPeriod().endPeriod} */}
-        </div>
       </div>
 
-      
       <ListHours handleClick={handleClick} />
+
       <div
-        className={`bg-white shadow py-8 absolute w-full h-full 
+        className={`fixed w-[90%] h-full right-0 top-0 bottom-0 bg-white
         ${
-          activeMenuShow ? "bottom-0 z-10" : "-bottom-full -z-10"
-        } transition-all`}
+          activeMenuShow ? "translate-0 z-10" : "translate-x-full -z-10"
+        } transition-transform`}
       >
-        <div className="mb-8 px-5">
-          <h2 className="text-3xl font-semibold mb-2">Agregar guía</h2>
+        <div className="bg-cyan-800">
+          <button
+            className="w-12 h-12 flex items-center text-2xl justify-center text-white ms-auto active:bg-gray-600"
+            onClick={handleClick}
+          >
+            X
+          </button>
         </div>
-
-        <form className="space-y-3 px-8 mb-4" action={registerGuides}>
-          {/*Agrega el numero de guia como ID o clave primarea*/}
-          <div className="flex items-center">
-            <label htmlFor="numeroDeGuia" className="w-full text-lg">
-              N° de Guía:
-            </label>
-            <input
-              type="text"
-              name="numeroDeGuia"
-              id="numeroDeGuia"
-              placeholder="062896"
-              className="focus:outline-0 focus:border-b"
-            />
+        <div className="py-6 px-3">
+          <div className="border border-gray-400 py-3 px-4 rounded-2xl flex flex-col mb-4">
+            <h4 className="text-lg">Agregar nueva guía.</h4>
+            <p className="text-sm text-gray-600">
+              Lorem ipsum dolor sit amet consectetur adipisicing.
+            </p>
           </div>
 
-          {/*Campo hora inicio, selecciona la de inicio*/}
-          <div className="flex items-center gap-2">
-            <label htmlFor="horaInicio" className="w-full text-lg">
-              Inicio:
-            </label>
-            <input
-              type="text"
-              name="horaInicio"
-              id="horaInicio"
-              placeholder="Hora de inicio."
-              className="focus:outline-0"
-            />
-          </div>
-
-          {/*Campo hora termino, selecciona la de termino*/}
-          <div className="flex items-center gap-2">
-            <label htmlFor="horaTermino" className="w-full text-lg">
-              Termino:
-            </label>
-            <input
-              type="text"
-              name="horaTermino"
-              id="horaTermino"
-              placeholder="Hora de termino."
-              className="focus:outline-0"
-            />
-          </div>
-
-          {/*Campo hora llegada, selecciona la de llegada al taller*/}
-          <div className="flex items-center gap-2">
-            <label htmlFor="horaLLegada" className="w-full text-lg">
-              Llegada:
-            </label>
-            <input
-              type="text"
-              name="horaLLegada"
-              id="horaLLegada"
-              placeholder="Hora de llegada"
-              className="focus:outline-0"
-            />
-          </div>
-
-          {/*Campo Maquinaria, selecciona la maquina por numero o por tonelaje*/}
-          <div className="flex items-center gap-2">
-            <label htmlFor="numeroMaquina" className="w-full text-lg">
-              Maquina
-            </label>
-            <select
-              name="numeroMaquina"
-              id="numeroMaquina"
-              className="focus:outline-0"
-            >
-              <option value="45">45 {"(3 Toneladas)"}</option>
-              <option value="5TON">5 Toneladas</option>
-              <option value="7TON" disabled={true}>
-                7 Toneladas
-              </option>
-            </select>
-          </div>
-
-          {/*Campo total horas, selecciona las horas totales trabajadas.*/}
-          <div className="flex items-center gap-2">
-            <label htmlFor="totalHorasTrabajadas" className="w-full text-lg">
-              Total horas:
-            </label>
-            <input
-              type="text"
-              name="totalHorasTrabajadas"
-              id="totalHorasTrabajadas"
-              placeholder="4.5"
-              className="focus:outline-0"
-            />
-          </div>
-
-          {/*Campo fecha: selecciona el dia actual o multiples dias.*/}
-          <div className="grid grid-cols-3 gap-y-2">
-            <label htmlFor="numeroDeGuia" className="w-full text-lg">
-              Día
-            </label>
-            <label
-              htmlFor="cuantosDias"
-              className="text-gray-600 text-end flex items-center gap-3 col-span-2"
-            >
-              <span>Fecha diferente</span>
+          <form className="space-y-3 px-3" action={(e) => handleSubmit(e)}>
+            {/*Agrega el numero de guia como ID o clave primarea*/}
+            <div className="flex items-center">
+              <label htmlFor="numbOfGuide" className="w-full text-lg">
+                N° de Guía:
+              </label>
               <input
-                type="checkbox"
-                name="cuantosDias"
-                id="cuantosDias"
-                className=""
+                type="text"
+                name="numbOfGuide"
+                id="numbOfGuide"
+                placeholder="062896"
+                className="focus:outline-0 focus:border-b"
+                defaultValue={valueInputNofOrden}
                 onChange={handleChange}
               />
-            </label>
-            {isChecked ? (
-              <div className="col-span-3 flex gap-4">
-                <div>
-                  <label htmlFor="diaInicio">Inicio</label>
+            </div>
+
+            {/*Campo hora inicio, selecciona la de inicio*/}
+            <div className="flex items-center gap-2">
+              <label htmlFor="startHours" className="w-full text-lg">
+                Inicio:
+              </label>
+              <input
+                type="text"
+                name="startHours"
+                id="startHours"
+                placeholder="Hora de inicio."
+                className="focus:outline-0"
+                onChange={handleChange}
+              />
+            </div>
+
+            {/*Campo hora termino, selecciona la de termino*/}
+            <div className="flex items-center gap-2">
+              <label htmlFor="endHours" className="w-full text-lg">
+                Termino:
+              </label>
+              <input
+                type="text"
+                name="endHours"
+                id="endHours"
+                placeholder="Hora de termino."
+                className="focus:outline-0"
+                onChange={handleChange}
+              />
+            </div>
+
+            {/*Campo hora llegada, selecciona la de llegada al taller*/}
+            <div className="flex items-center gap-2">
+              <label htmlFor="arrivalHours" className="w-full text-lg">
+                Llegada:
+              </label>
+              <input
+                type="text"
+                name="arrivalHours"
+                id="arrivalHours"
+                placeholder="Hora de llegada"
+                className="focus:outline-0"
+                onChange={handleChange}
+              />
+            </div>
+
+            {/*Campo Maquinaria, selecciona la maquina por numero o por tonelaje*/}
+            <div className="flex items-center gap-2">
+              <label htmlFor="numbMachine" className="w-full text-lg">
+                Maquina
+              </label>
+              <select
+                name="numbMachine"
+                id="numbMachine"
+                className="focus:outline-0"
+                onChange={handleChange}
+              >
+                <option value="45">45 {"(3 Toneladas)"}</option>
+                <option value="5TON">5 Toneladas</option>
+                <option value="7TON" disabled={true}>
+                  7 Toneladas
+                </option>
+              </select>
+            </div>
+
+            {/*Campo total horas, selecciona las horas totales trabajadas.*/}
+            <div className="flex items-center gap-2">
+              <label htmlFor="totalHoursWorked" className="w-full text-lg">
+                Total horas:
+              </label>
+              <input
+                type="text"
+                name="totalHoursWorked"
+                id="totalHoursWorked"
+                placeholder="4.5"
+                className="focus:outline-0"
+                onChange={handleChange}
+              />
+            </div>
+
+            {/*Campo Empresa, ingresa la empresa donde trabajaste.*/}
+            <div className="flex items-center gap-2">
+              <label htmlFor="enterprise" className="w-full text-lg">
+                Empresa:
+              </label>
+              <input
+                type="text"
+                name="enterprise"
+                id="enterprise"
+                placeholder="Nombre empresa"
+                className="focus:outline-0"
+                onChange={handleChange}
+              />
+            </div>
+
+            {/*Campo fecha: selecciona el dia actual o multiples dias.*/}
+            <div className="grid grid-cols-3 gap-y-2">
+              <label className="w-full text-lg">Día</label>
+              <label
+                htmlFor="cuantosDias"
+                className="text-gray-600 text-end flex items-center gap-3 col-span-2"
+              >
+                <span>Fecha diferente</span>
+                <input
+                  type="checkbox"
+                  name="cuantosDias"
+                  id="cuantosDias"
+                  className=""
+                  onChange={handleChange}
+                />
+              </label>
+              {isChecked ? (
+                <div className="col-span-3">
+                  <label htmlFor="diaInicio">Digte el dia</label>
                   <input
                     type="text"
-                    name="diaInicio"
-                    id="diaInicio"
+                    name="otherDay"
+                    id="otherDay"
                     placeholder={completeDate}
                     className="w-full text-3xl focus:outline-0"
                   />
                 </div>
-                <div>
-                  <label htmlFor="diaFinal">Final</label>
-                  <input
-                    type="diaFinal"
-                    name="diaFinal"
-                    id="diaFinal"
-                    placeholder={completeDate}
-                    className="w-full text-3xl focus:outline-0"
-                  />
+              ) : (
+                <div className="col-span-3 flex items-center justify-around">
+                  <span className="text-gray-600 text-5xl">{completeDate}</span>
+                  <div className="flex flex-col border border-gray-300 p-3 rounded-lg">
+                    <p className="text-red-600">
+                      {date.dayWeekName().toUpperCase()}
+                    </p>
+                    <p className="text-sm font-bold">
+                      Valor:{" "}
+                      <span className="font-thin">{"(Super Extra)"}</span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="col-span-3 flex items-center justify-around">
-                <span className="text-gray-600 text-5xl">{completeDate}</span>
-                <div className="flex flex-col border border-gray-300 p-3 rounded-lg">
-                  <p className="text-red-600">
-                    {date.dayWeekName().toUpperCase()}
-                  </p>
-                  <p className="text-sm font-bold">
-                    Valor: <span className="font-thin">{"(Super Extra)"}</span>
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          <button
-            type="submit"
-            className="bg-emerald-500 uppercase px-3 py-3 text-white w-full"
-          >
-            Ingrsar horas
-          </button>
-        </form>
-
-        <button
-          className="w-10 h-10 flex items-center justify-center text-xl absolute top-2 right-2 font-bold"
-          onClick={handleClick}
-        >
-          X
-        </button>
+            <button
+              type="submit"
+              className="bg-emerald-500 uppercase px-3 py-3 text-white w-full"
+            >
+              Ingrsar horas
+            </button>
+          </form>
+        </div>
       </div>
-
-
     </div>
   );
 };
