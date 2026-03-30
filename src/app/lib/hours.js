@@ -1,76 +1,53 @@
-// const guides = [
-//   {
-//     numbOfGuide: "012345",
-//     operario: "Juan Herrera",
-//     date: { day: 21, month: 3 },
-//     lugar: "Metrica",
-//     totalHoursWorked: 3,
-//     precioHora: "Normales",
-//   },
-//   {
-//     numbOfGuide: "012346",
-//     operario: "Juan Herrera",
-//     date: { day: 22, month: 3 },
-//     lugar: "Marcelino",
-//     totalHoursWorked: 2,
-//     precioHora: "Normales",
-//   },
-//   {
-//     numbOfGuide: "012347",
-//     operario: "Juan Herrera",
-//     date: { day: 24, month: 3 },
-//     lugar: "Metrica",
-//     totalHoursWorked: 6,
-//     precioHora: "Normales",
-//   },
-//   {
-//     numbOfGuide: "012348",
-//     operario: "Juan Herrera",
-//     date: { day: 25, month: 3 },
-//     lugar: "ejemplo4",
-//     totalHoursWorked: 2,
-//     precioHora: "Extras",
-//   },
-//   {
-//     numbOfGuide: "012349",
-//     operario: "Juan Herrera",
-//     date: { day: 26, month: 3 },
-//     lugar: "ejemplo5",
-//     totalHoursWorked: 2,
-//     precioHora: "Extras",
-//   },
-//   {
-//     numbOfGuide: "012350",
-//     operario: "Juan Herrera",
-//     date: { day: 24, month: 3 },
-//     lugar: "ejemplo6",
-//     totalHoursWorked: 6,
-//     precioHora: "Extras",
-//   },
-//   {
-//     numbOfGuide: "012351",
-//     operario: "Juan Herrera",
-//     date: { day: 28, month: 3 },
-//     lugar: "ejemplo7",
-//     totalHoursWorked: 2,
-//     precioHora: "S.Extras",
-//   },
-//   {
-//     numbOfGuide: "012352",
-//     operario: "Juan Herrera",
-//     date: { day: 29, month: 3 },
-//     lugar: "ejemplo8",
-//     totalHoursWorked: 14,
-//     precioHora: "S.Extras",
-//   },
-//   {
-//     numbOfGuide: "012353",
-//     operario: "Juan Herrera",
-//     date: { day: 31, month: 3 },
-//     lugar: "ejemplo9",
-//     totalHoursWorked: 3,
-//     precioHora: "S.Extras",
-//   },
-// ];
+import { getGuides } from "./data";
+
+const guides = await getGuides();
 
 
+export const hours = {
+  date: new Date(),
+  guides: guides,
+  hours: [
+    {
+      totalNormalHours: 0,
+      totalExtraHours: 0,
+      totalSuperExtraHours: 0,
+    },
+  ],
+  timeLine: {
+    dayFinalyPeriod: 24,
+    currentDay: "",
+    currentYear: "",
+    startMonth: "",
+    endMonth: "",
+    getFullPeriod: function () {
+      return {
+        startPeriod: `${this.dayFinalyPeriod}/0${this.startMonth}`,
+        endPeriod: `${this.dayFinalyPeriod}/0${this.endMonth}`,
+      };
+    },
+  },
+
+  init() {
+    this.createPeriod();
+    this.createHours()
+  },
+
+  createHours () {
+    const totalHoursNormal = this.guides.guides.filter(guide => guide.type_price === 'Normales').reduce((curr, acc) => curr + acc.total_hours_worked, 0)
+    const totalHoursExtras = this.guides.guides.filter(guide => guide.type_price === 'Extras').reduce((curr, acc) => curr + acc.total_hours_worked, 0)
+    const totalHoursSuperExtras = this.guides.guides.filter(guide => guide.type_price === 'S.Extras').reduce((curr, acc) => curr + acc.total_hours_worked, 0)
+
+    this.hours[0] = [totalHoursNormal, totalHoursExtras, totalHoursSuperExtras]
+
+    console.log(this.hours);
+  },
+
+  createPeriod() {
+    this.timeLine.currentDay = this.date.getDate();
+    this.timeLine.currentYear = this.date.getFullYear();
+    if (this.timeLine.currentDay > this.timeLine.dayFinalyPeriod) {
+      this.timeLine.startMonth = this.date.getMonth() + 1;
+      this.timeLine.endMonth = this.timeLine.startMonth + 1;
+    }
+  },
+};

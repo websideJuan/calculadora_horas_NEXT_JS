@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+.btn-menu-show {
+  @apply w-6 h-6 flex flex-col justify-center items-center gap-2 md:hidden;
+}
+
+.btn-menu-show span {
+  @apply transition-all w-full h-px bg-white rounded-2xl text-white
+}
