@@ -194,9 +194,9 @@ export const RegisterGuideForm = () => {
 
         <button
           type="submit"
-          className="bg-amber-500 px-6 py-3 text-white rounded-4xl"
+          className="bg-amber-500 px-6 py-3 text-white rounded-4xl active:bg-amber-700"
         >
-          Ingrsar horas
+          Ingresar horas
         </button>
       </form>
     </>

@@ -60,16 +60,13 @@ export async function registerGuides(formData) {
   }
 }
 
-export async function getGuides(numbOfGuide) {
+export async function getGuides(limit) {
   try {
-    const data = await sql.query(`SELECT * FROM GUIDES`);
-
-    if (numbOfGuide) {
-      return {
-        success: true,
-        guides: data.filter((guide) => guide.numbOfGuide === numbOfGuide),
-      };
-    }
+    const data = await sql.query(`   
+      SELECT * FROM GUIDES
+      ORDER BY 	numb_of_guide DESC
+      ${limit ? `LIMIT ${limit}` : '' };
+    `);
 
     return {
       success: true,

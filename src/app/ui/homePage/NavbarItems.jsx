@@ -33,7 +33,7 @@ export const NavbarItems = () => {
           <ul className='flex flex-col'>
             {items.map((item) => (
               <li className="text-white p-2 ps-6" key={item.dataId}>
-                <Link href={item.url}>{item.name}</Link>
+                <Link href={item.url} onClick={handleClick}>{item.name}</Link>
               </li>
             ))}
           </ul>

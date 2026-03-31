@@ -34,12 +34,10 @@ export const hours = {
 
   createHours () {
     const totalHoursNormal = this.guides.guides.filter(guide => guide.type_price === 'Normales').reduce((curr, acc) => curr + acc.total_hours_worked, 0)
-    const totalHoursExtras = this.guides.guides.filter(guide => guide.type_price === 'Extras').reduce((curr, acc) => curr + acc.total_hours_worked, 0)
-    const totalHoursSuperExtras = this.guides.guides.filter(guide => guide.type_price === 'S.Extras').reduce((curr, acc) => curr + acc.total_hours_worked, 0)
+    const totalHoursExtras = this.guides.guides.filter(guide => guide.type_price === 'Extra').reduce((curr, acc) => curr + acc.total_hours_worked, 0)
+    const totalHoursSuperExtras = this.guides.guides.filter(guide => guide.type_price === 'S.Extra').reduce((curr, acc) => curr + acc.total_hours_worked, 0)
 
     this.hours[0] = [totalHoursNormal, totalHoursExtras, totalHoursSuperExtras]
-
-    console.log(this.hours);
   },
 
   createPeriod() {
