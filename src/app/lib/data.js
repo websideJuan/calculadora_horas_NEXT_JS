@@ -1,61 +1,46 @@
 "use server";
-import { getCompleteDate } from "./date";
 import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL);
 
 export async function registerGuides(formData) {
   try {
-    const currentDay = formData.get("cuantosDias");
-    const guide = {
-      numbOfGuide: formData.get("numbOfGuide"),
-      forklift_driver: 1,
-      dateGuide: currentDay ? formData.get("otherDay") : getCompleteDate(),
-      enterprise: formData.get("enterprise") || "Particular",
-      totalHoursWorked: Number(formData.get("totalHoursWorked")),
-      typePrice: "Normales",
-      startHours: formData.get("startHours"),
-      endHours: formData.get("endHours"),
-      arrivalHours: formData.get("arrivalHours"),
-      numbMachine: formData.get("numbMachine"),
-    };
-
-    Number(guide.startHours.replace(":", ".")) > 8.5 &&
-    Number(guide.startHours.replace(":", ".")) < 18.5
-      ? (guide.typePrice = "Normales")
-      : Number(guide.arrivalHours.replace(":", ".")) > 18.5 &&
-          Number(guide.arrivalHours.replace(":", ".")) < 22.5
-        ? (guide.typePrice = "Extra")
-        : Number(guide.startHours.replace(":", ".")) < 8.5 &&
-            Number(guide.arrivalHours.replace(":", ".") > 22.5)
-          ? (guide.typePrice = "S.Extra")
-          : "null";
-
-    if (
-      guide.numbOfGuide === "" ||
-      guide.totalHoursWorked === "" ||
-      guide.numbMachine === ""
-    ) {
-      return {
-        success: false,
-        message: "input empty",
-      };
-    }
+    console.log(formData);
+    
+    const {
+      numbOfGuide,
+      forklift_driver,
+      dateGuide,
+      enterprise,
+      totalHoursWorked,
+      normalHour,
+      extraHour,
+      superExtraHour,
+      typePrice,
+      startHours,
+      endHours,
+      arrivalHours,
+      numbMachine,
+    } = formData;
 
     const res =
-      await sql`INSERT INTO GUIDES (numb_of_guide, forklift_driver, date_guide, enterprise, total_hours_worked, type_price, start_hours, end_hours, arrival_hours, numbMachine) 
+      await sql`INSERT INTO GUIDES (num_of_guide, forklift_driver, date_guide, enterprise, total_hours_worked, normal_hour, extra_hour, super_extra_hour ,type_price, start_hours, end_hours, arrival_hours, num_machine) 
        VALUES (
-        ${guide.numbOfGuide}, ${guide.forklift_driver}, ${guide.dateGuide}, ${guide.enterprise}, ${guide.totalHoursWorked}, ${guide.typePrice}, ${guide.startHours}, ${guide.endHours}, ${guide.arrivalHours}, ${guide.numbMachine}
-       ) RETURNING numb_of_guide;`;
+        ${numbOfGuide}, ${forklift_driver}, ${dateGuide}, ${enterprise}, ${totalHoursWorked} ,${normalHour}, ${extraHour}, ${superExtraHour}, ${typePrice}, ${startHours}, ${endHours}, ${arrivalHours}, ${numbMachine}
+       )`;
 
     return {
+      code: 200,
       success: true,
       result: res,
+      message: "create success",
     };
   } catch (error) {
     return {
+      code: 505,
+      result: [],
       success: false,
-      message: error.message,
+      message: "Server internal error" + error.message,
     };
   }
 }
@@ -64,8 +49,8 @@ export async function getGuides(limit) {
   try {
     const data = await sql.query(`   
       SELECT * FROM GUIDES
-      ORDER BY 	numb_of_guide DESC
-      ${limit ? `LIMIT ${limit}` : '' };
+      ORDER BY 	num_of_guide DESC
+      ${limit ? `LIMIT ${limit}` : ""};
     `);
 
     return {
@@ -75,9 +60,22 @@ export async function getGuides(limit) {
   } catch (error) {
     return {
       success: false,
+      guides: [],
       errorMessage: error.message,
     };
   }
+}
+
+export async function getGuideForPeriod(initDate, endDate) {
+  try {
+    return sql`
+      SELECT * FROM GUIDES
+      WHERE date_guide BETWEEN ${initDate} AND ${endDate};`;
+  } catch (error) {
+    console.error(error);
+    return []
+  }
+  
 }
 
 export async function getUsersData() {

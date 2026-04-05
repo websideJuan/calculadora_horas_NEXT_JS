@@ -46,7 +46,11 @@ const getCompleteDate = () => {
   const currentDay = getCurrentDay()
   const currentMonth = getCurrentMonth()
 
-  return (`${currentDay}/${currentMonth}`)
+  if (currentMonth < 10) {
+    return (`2026-0${currentMonth}-0${currentDay}`)
+  } else {
+    return (`2026${currentMonth}-${currentDay}`)
+  }
 }
 
 export {

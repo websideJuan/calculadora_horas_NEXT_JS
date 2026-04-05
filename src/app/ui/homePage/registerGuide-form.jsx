@@ -1,41 +1,125 @@
 "use client";
 import { useState } from "react";
-import { date, getCompleteDate } from "@/app/lib/date";
+import { getCompleteDate } from "@/app/lib/date";
 import { registerGuides } from "@/app/lib/data";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileArchive } from '@fortawesome/free-solid-svg-icons'
-
+import { faFileArchive } from "@fortawesome/free-solid-svg-icons";
+import { totalHourWorked } from "../../../../scripts/counterHours";
+import { transformToHour } from "../../../../scripts/counterHours";
 
 export const RegisterGuideForm = () => {
-  const [isChecked, setIsChecked] = useState(false);
   const completeDate = getCompleteDate();
+  const [totalHour, setTotalHour] = useState(0);
+  const [defaultValue, setDefaultValue] = useState("");
+  const [guideData, setGuideData] = useState({
+    numbOfGuide: null,
+    forklift_driver: 1,
+    dateGuide: completeDate,
+    enterprise: null,
+    totalHoursWorked: 0,
+    typePrice: "['normales', 'extras', 'superExtras']",
+    normalHour: null,
+    extraHour: null,
+    superExtraHour: null,
+    startHours: null,
+    endHours: null,
+    arrivalHours: null,
+    numbMachine: null,
+  });
+
+  const [progress, setProgrss] = useState(0);
+  const [toast, setToast] = useState(false);
+  const [show, setShow] = useState(false);
+  const [message, setMessage] = useState({
+    code: 0,
+    text: "",
+  });
 
   const handleChange = (e) => {
-    if (e.target.name === "cuantosDias") {
-      setIsChecked(!isChecked);
-    }
+    const nameInput = e.target.name;
+    const valueInput = e.target.value;
+
+    setGuideData({
+      ...guideData,
+      [nameInput]: valueInput,
+    });
   };
 
   const handleSubmit = async (e) => {
-    const res = await registerGuides(e);
+    e.preventDefault();
+    const totalHoursWorked = transformToHour(
+      totalHourWorked(guideData.startHours, guideData.arrivalHours),
+    );
+    const extraHour = Number(guideData.extraHour);
+    const superExtraHour = Number(guideData.superExtraHour);
 
-    if (!res.success) {
-      return;
-    }
+    guideData.superExtraHour = superExtraHour;
+    guideData.extraHour = extraHour;
+    guideData.normalHour = totalHoursWorked - extraHour - superExtraHour;
+    guideData.totalHoursWorked = totalHoursWorked;
+
+    console.log(guideData);
+
+    const res = await registerGuides(guideData);
+
+    const timeStamp = 300;
+    let progressBar = timeStamp;
+
+    setToast(true);
+
+    setMessage({
+      type: res.code,
+      text: res.message,
+    });
+
+    setTimeout(() => {
+      setShow(true);
+    }, timeStamp);
+
+    const id = setInterval(() => {
+      progressBar--;
+      setProgrss(progressBar);
+      if (progressBar === 0) {
+        clearInterval(id);
+      }
+    }, 10);
+
+    setTimeout(() => {
+      setShow(false);
+      setToast(false);
+      setMessage({});
+    }, timeStamp * 10);
   };
 
   return (
     <>
       <div className="bg-amber-400 w-[90%] mx-auto h-40 rounded-4xl mb-9">
         <div className="flex justify-start items-end h-full ps-6 pb-6">
-
           <div className="flex flex-col gap-2 text-2xl">
             <FontAwesomeIcon icon={faFileArchive} />
-            <span className="text-sm">Crear registro de guia</span>
+            <span className="text-sm ms-1">Crear registro de guia</span>
           </div>
         </div>
       </div>
-      <form className="space-y-3 px-6" action={(e) => handleSubmit(e)}>
+      {toast && (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="flex justify-end items-end  h-full px-2 py-2 relative">
+            <div
+              className={`bg-amber-400 h-20 w-62.5 -translate-y-250 pointer-events-auto transition-transform  rounded-lg overflow-hidden ${show ? "translate-y-0" : "opacity-0"}`}
+            >
+              <div className="flex gap-3">
+                Code:
+                {message.type} -{message.text}
+              </div>
+              <span
+                className={`absolute h-2 bg-amber-700/40 bottom-0 left-0 w-75`}
+                style={{ width: `${progress}px` }}
+              ></span>
+            </div>
+          </div>
+        </div>
+      )}
+      <form className="space-y-3 px-6" onSubmit={handleSubmit}>
         {/*Agrega el numero de guia como ID o clave primarea*/}
         <div className="flex items-center">
           <label htmlFor="numbOfGuide" className="w-full text-lg text-gray-400">
@@ -47,6 +131,7 @@ export const RegisterGuideForm = () => {
             id="numbOfGuide"
             placeholder="062896"
             className="focus:outline-0 placeholder:text-amber-500 text-amber-500"
+            defaultValue={defaultValue}
             onChange={handleChange}
           />
         </div>
@@ -57,7 +142,7 @@ export const RegisterGuideForm = () => {
             Inicio:
           </label>
           <input
-            type="text"
+            type="time"
             name="startHours"
             id="startHours"
             placeholder="Hora de inicio."
@@ -72,7 +157,7 @@ export const RegisterGuideForm = () => {
             Termino:
           </label>
           <input
-            type="text"
+            type="time"
             name="endHours"
             id="endHours"
             placeholder="Hora de termino."
@@ -90,10 +175,42 @@ export const RegisterGuideForm = () => {
             Llegada:
           </label>
           <input
-            type="text"
+            type="time"
             name="arrivalHours"
             id="arrivalHours"
             placeholder="Hora de llegada"
+            className="focus:outline-0 placeholder:text-amber-500 text-amber-500"
+            onChange={handleChange}
+          />
+        </div>
+
+        {/**/}
+        <div className="flex items-center gap-2">
+          <label htmlFor="extraHour" className="w-full text-lg text-gray-400">
+            Hora extra
+          </label>
+          <input
+            type="string"
+            name="extraHour"
+            id="extraHour"
+            placeholder="Total de horas extras"
+            className="focus:outline-0 placeholder:text-amber-500 text-amber-500"
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="superExtraHour"
+            className="w-full text-lg text-gray-400"
+          >
+            Hora S.Extra
+          </label>
+          <input
+            type="string"
+            name="superExtraHour"
+            id="superExtraHour"
+            placeholder="Total de horas super extras"
             className="focus:outline-0 placeholder:text-amber-500 text-amber-500"
             onChange={handleChange}
           />
@@ -110,30 +227,13 @@ export const RegisterGuideForm = () => {
             className="focus:outline-0 placeholder:text-amber-500 text-amber-500"
             onChange={handleChange}
           >
-            <option value="45">45 {"(3 Toneladas)"}</option>
-            <option value="5TON">5 Toneladas</option>
-            <option value="7TON" disabled={true}>
+            <option value="null">--</option>
+            <option value="1">45 {"(3 Toneladas)"}</option>
+            <option value="2">5 Toneladas</option>
+            <option value="3" disabled={true}>
               7 Toneladas
             </option>
           </select>
-        </div>
-
-        {/*Campo total horas, selecciona las horas totales trabajadas.*/}
-        <div className="flex items-center gap-2">
-          <label
-            htmlFor="totalHoursWorked"
-            className="w-full text-lg text-gray-400"
-          >
-            Total horas:
-          </label>
-          <input
-            type="text"
-            name="totalHoursWorked"
-            id="totalHoursWorked"
-            placeholder="4.5"
-            className="focus:outline-0 placeholder:text-amber-500 text-amber-500"
-            onChange={handleChange}
-          />
         </div>
 
         {/*Campo Empresa, ingresa la empresa donde trabajaste.*/}
@@ -152,44 +252,18 @@ export const RegisterGuideForm = () => {
         </div>
 
         {/*Campo fecha: selecciona el dia actual o multiples dias.*/}
-        <div className="grid grid-cols-3 gap-y-2">
-          <h5 className="w-full text-lg text-gray-400">Día</h5>
-          <label
-            htmlFor="cuantosDias"
-            className="text-gray-600 text-end flex items-center gap-3 col-span-2"
-          >
-            <span>Fecha diferente</span>
-            <input
-              type="checkbox"
-              name="cuantosDias"
-              id="cuantosDias"
-              className="appearance-none size-4 border border-gray-300 rounded-xs checked:bg-amber-500 checked:border-transparent focus:outline-none transition-all"
-              onChange={handleChange}
-            />
+        <div className="flex items-center gap-2">
+          <label htmlFor="dateGuide" className="w-full text-lg text-gray-400">
+            Día
           </label>
-          {isChecked ? (
-            <div className="col-span-3 flex justify-around items-center">
-              <label htmlFor="otherDay" className="text-gray-500">
-                Dia diferente
-              </label>
-              <input
-                type="text"
-                name="otherDay"
-                id="otherDay"
-                placeholder={completeDate}
-                className="text-5xl focus:outline-0 placeholder:text-amber-500 text-amber-500"
-              />
-            </div>
-          ) : (
-            <div className="col-span-3 flex items-center justify-around">
-              <span className="text-amber-500 text-5xl">{completeDate}</span>
-              <div className="flex flex-col border border-gray-300 p-3 rounded-lg">
-                <p className="text-red-400">
-                  {date.dayWeekName().toUpperCase()}
-                </p>
-              </div>
-            </div>
-          )}
+          <input
+            type="text"
+            name="dateGuide"
+            id="dateGuide"
+            defaultValue={completeDate}
+            onChange={handleChange}
+            className="text-5xl focus:outline-0 placeholder:text-amber-500 text-amber-500"
+          />
         </div>
 
         <button
